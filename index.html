@@ -219,11 +219,9 @@
                         
                         let coords = (lat !== null && lng !== null) ? { lat, lng } : null;
 
-                        // Geocode if coords missing
                         if (!coords) {
                             loaderMsg.innerText = `Mendeteksi Alamat: ${nama}`;
                             coords = await fetchCoords(getVal(row, ['Alamat']));
-                            // Nominatim usage requires spacing to avoid 429
                             if (i % 2 === 0) await new Promise(r => setTimeout(r, 1000));
                         }
 
@@ -231,18 +229,15 @@
                             const marker = L.marker([coords.lat, coords.lng]).bindPopup(createPopup(row));
                             markers.addLayer(marker);
                             
-                            // Store reference for search
                             const lukId = `luk-${i}`;
                             markerMap.set(lukId, { marker, row, coords });
                             processedCount++;
                         }
 
-                        // Update Progress UI
                         countInstant.innerText = processedCount;
                         progressBar.style.width = `${((i + 1) / allLUKData.length) * 100}%`;
                     }
 
-                    // Done loading
                     loader.style.opacity = "0";
                     setTimeout(() => loader.style.display = 'none', 500);
                     badge.innerText = "Data BAPETEN Terhubung";
@@ -284,7 +279,6 @@
                 }
             });
 
-            // Close results when clicking outside
             document.addEventListener('click', (e) => {
                 if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target)) {
                     resultsDiv.classList.add('hidden');
@@ -300,10 +294,8 @@
             document.getElementById('search-results').classList.add('hidden');
             document.getElementById('luk-search').value = getVal(data.row, ['Nama']);
 
-            // Focus map
             map.flyTo([coords.lat, coords.lng], 16, { animate: true, duration: 1.5 });
             
-            // Marker cluster might hide it, so we use zoomToShowLayer
             markers.zoomToShowLayer(marker, () => {
                 marker.openPopup();
             });
@@ -336,9 +328,21 @@
             return "";
         }
 
+        // Fungsi umum untuk newline (digunakan pada Alamat)
         function formatMultiLine(text) {
             if (!text) return '-';
             return text.toString().split('\n').join('<br>');
+        }
+
+        // Fungsi khusus untuk list (digunakan pada Kontak & Email agar memecah koma/titik koma menjadi baris baru)
+        function formatList(text) {
+            if (!text) return '-';
+            // Regex memisahkan berdasarkan newline (\n), koma (,), atau titik koma (;)
+            return text.toString()
+                .split(/[\n,;]/)
+                .map(item => item.trim())
+                .filter(item => item.length > 0)
+                .join('<br>');
         }
 
         function createPopup(row) {
@@ -360,11 +364,11 @@
                     <div class="space-y-2 text-[11px] border-t border-slate-100 pt-3 mt-2">
                         <div class="flex items-start gap-2">
                             <span class="font-bold text-slate-500 min-w-[50px]">Kontak:</span>
-                            <span class="text-slate-800 font-semibold leading-relaxed">${formatMultiLine(kontak)}</span>
+                            <span class="text-slate-800 font-semibold leading-relaxed">${formatList(kontak)}</span>
                         </div>
                         <div class="flex items-start gap-2">
                             <span class="font-bold text-slate-500 min-w-[50px]">Email:</span>
-                            <span class="text-indigo-800 break-all font-bold underline leading-relaxed">${formatMultiLine(email)}</span>
+                            <span class="text-indigo-800 break-all font-bold underline leading-relaxed">${formatList(email)}</span>
                         </div>
                     </div>
                     ${mapsLink ? `
