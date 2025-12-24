@@ -35,12 +35,14 @@
             padding: 4px; 
             box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.2); 
         }
-        .leaflet-popup-content { margin: 16px; min-width: 240px !important; }
+        .leaflet-popup-content { margin: 16px; min-width: 280px !important; }
         
         #progress-bar { transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
         
-        /* Search Suggestions Styling */
-        .search-results-shadow { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        /* Custom Marker Glow for Complete Scopes */
+        .marker-pin-complete {
+            filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.6));
+        }
         
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -89,10 +91,7 @@
                 <input type="text" id="luk-search" placeholder="Cari Nama LUK atau Lokasi (Padang, Depok...)" 
                     class="block w-full pl-11 pr-4 py-4 bg-white border-2 border-slate-100 rounded-2xl leading-5 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-sm font-semibold text-slate-800 placeholder:text-slate-400 shadow-sm">
             </div>
-            <!-- Search Results Dropdown -->
-            <div id="search-results" class="absolute mt-2 w-full bg-white rounded-2xl border border-slate-100 shadow-2xl max-h-80 overflow-y-auto hidden z-[1002]">
-                <!-- Results injected here -->
-            </div>
+            <div id="search-results" class="absolute mt-2 w-full bg-white rounded-2xl border border-slate-100 shadow-2xl max-h-80 overflow-y-auto hidden z-[1002]"></div>
         </div>
 
         <!-- Map Card Section -->
@@ -129,12 +128,12 @@
             </div>
 
             <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex items-center gap-5 hover:shadow-xl transition-all group">
-                <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-sm">
+                <div class="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-sm">
                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
                 <div>
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Berhasil Dipetakan</p>
-                    <h3 class="text-4xl font-black text-slate-800 tracking-tighter" id="count-instant">0</h3>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Sub Lingkup Lengkap</p>
+                    <h3 class="text-4xl font-black text-slate-800 tracking-tighter" id="count-complete">0</h3>
                 </div>
             </div>
 
@@ -163,7 +162,30 @@
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSRXF0_8knUCl48LoBsU_Zjey3lthBmdNiuWhpWEDaA2bU6s2yyt2aMAQ3rl3xtbGN232TR-K-ottet/pub?gid=472924235&single=true&output=csv';
 
         let map, markers, allLUKData = [];
-        const markerMap = new Map(); // Store markers with unique IDs for searching
+        const markerMap = new Map();
+
+        // Dictionary Singkatan Lingkup
+        const SCOPE_NAMES = {
+            'RU': 'Radiografi Umum',
+            'FL': 'Fluoroskopi',
+            'MM': 'Mammografi',
+            'CT': 'CT Scan',
+            'DT': 'Pesawat Gigi'
+        };
+
+        const createIcon = (color, isPremium) => L.divIcon({
+            className: isPremium ? 'marker-pin-complete' : '',
+            html: `<svg width="32" height="42" viewBox="0 0 32 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 0C7.163 0 0 7.163 0 16c0 12 16 26 16 26s16-14 16-26c0-8.837-7.163-16-16-16z" fill="${color}"/>
+                    <circle cx="16" cy="16" r="6" fill="white" fill-opacity="0.8"/>
+                   </svg>`,
+            iconSize: [32, 42],
+            iconAnchor: [16, 42],
+            popupAnchor: [0, -40]
+        });
+
+        const iconIndigo = createIcon('#4f46e5', false);
+        const iconGold = createIcon('#f59e0b', true);
 
         window.onload = function() {
             map = L.map('map', { 
@@ -178,13 +200,8 @@
                 zoomToBoundsOnClick: true
             });
             map.addLayer(markers);
-            
             L.control.zoom({ position: 'bottomright' }).addTo(map);
-
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; OpenStreetMap',
-                maxZoom: 19
-            }).addTo(map);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
 
             initSearch();
             loadData();
@@ -203,43 +220,54 @@
                     const loaderMsg = document.getElementById('loader-msg');
                     const progressBar = document.getElementById('progress-bar');
                     const countTotal = document.getElementById('count-total');
-                    const countInstant = document.getElementById('count-instant');
+                    const countComplete = document.getElementById('count-complete');
+                    
                     const badge = document.getElementById('status-badge');
                     const dot = document.getElementById('status-dot');
                     const ping = document.getElementById('status-ping');
 
                     countTotal.innerText = allLUKData.length;
                     let processedCount = 0;
+                    let completeCount = 0;
 
                     for (let i = 0; i < allLUKData.length; i++) {
                         const row = allLUKData[i];
                         const lat = cleanCoord(getVal(row, ['Lat', 'Latitude']));
                         const lng = cleanCoord(getVal(row, ['Lng', 'Lon', 'Longitude', 'Long']));
-                        const nama = getVal(row, ['Nama']);
+                        const lingkupRaw = getVal(row, ['Lingkup']);
                         
+                        const scopeCount = lingkupRaw.split(/[\n,;]/).map(s => s.trim()).filter(s => s.length > 0).length;
+                        const isComplete = scopeCount >= 5;
+                        if(isComplete) completeCount++;
+
                         let coords = (lat !== null && lng !== null) ? { lat, lng } : null;
 
                         if (!coords) {
-                            loaderMsg.innerText = `Mendeteksi Alamat: ${nama}`;
+                            loaderMsg.innerText = `Mendeteksi: ${getVal(row, ['Nama'])}`;
                             coords = await fetchCoords(getVal(row, ['Alamat']));
                             if (i % 2 === 0) await new Promise(r => setTimeout(r, 1000));
                         }
 
                         if (coords) {
-                            const marker = L.marker([coords.lat, coords.lng]).bindPopup(createPopup(row));
-                            markers.addLayer(marker);
+                            const marker = L.marker([coords.lat, coords.lng], {
+                                icon: isComplete ? iconGold : iconIndigo
+                            }).bindPopup(createPopup(row, scopeCount));
                             
+                            markers.addLayer(marker);
                             const lukId = `luk-${i}`;
                             markerMap.set(lukId, { marker, row, coords });
                             processedCount++;
                         }
 
-                        countInstant.innerText = processedCount;
+                        countComplete.innerText = completeCount;
                         progressBar.style.width = `${((i + 1) / allLUKData.length) * 100}%`;
                     }
 
+                    // Done loading - Update Visuals
                     loader.style.opacity = "0";
                     setTimeout(() => loader.style.display = 'none', 500);
+                    
+                    // Update Badge to Green
                     badge.innerText = "Data BAPETEN Terhubung";
                     badge.className = "text-[10px] font-black text-emerald-600 uppercase tracking-widest";
                     dot.className = "relative inline-flex rounded-full h-3 w-3 bg-emerald-500";
@@ -254,59 +282,46 @@
 
             searchInput.addEventListener('input', (e) => {
                 const query = e.target.value.toLowerCase().trim();
-                if (query.length < 2) {
-                    resultsDiv.classList.add('hidden');
-                    return;
-                }
+                if (query.length < 2) { resultsDiv.classList.add('hidden'); return; }
 
                 const filtered = Array.from(markerMap.entries()).filter(([id, data]) => {
-                    const name = getVal(data.row, ['Nama']).toLowerCase();
-                    const addr = getVal(data.row, ['Alamat']).toLowerCase();
-                    return name.includes(query) || addr.includes(query);
+                    return getVal(data.row, ['Nama']).toLowerCase().includes(query) || 
+                           getVal(data.row, ['Alamat']).toLowerCase().includes(query);
                 });
 
                 if (filtered.length > 0) {
                     resultsDiv.innerHTML = filtered.map(([id, data]) => `
                         <div onclick="selectLUK('${id}')" class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-slate-50 last:border-0 transition-colors">
                             <div class="text-sm font-bold text-indigo-900">${getVal(data.row, ['Nama'])}</div>
-                            <div class="text-[11px] text-slate-500 truncate">${getVal(data.row, ['Alamat'])}</div>
+                            <div class="text-[10px] text-slate-400 uppercase font-black tracking-widest mt-0.5">${getVal(data.row, ['Alamat']).substring(0, 40)}...</div>
                         </div>
                     `).join('');
                     resultsDiv.classList.remove('hidden');
                 } else {
-                    resultsDiv.innerHTML = `<div class="px-4 py-4 text-xs text-slate-400 italic font-medium">Lembaga tidak ditemukan...</div>`;
+                    resultsDiv.innerHTML = `<div class="px-4 py-4 text-xs text-slate-400 italic">Tidak ditemukan...</div>`;
                     resultsDiv.classList.remove('hidden');
                 }
             });
 
             document.addEventListener('click', (e) => {
-                if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target)) {
-                    resultsDiv.classList.add('hidden');
-                }
+                if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target)) resultsDiv.classList.add('hidden');
             });
         }
 
         window.selectLUK = function(id) {
             const data = markerMap.get(id);
             if (!data) return;
-
-            const { marker, coords } = data;
             document.getElementById('search-results').classList.add('hidden');
             document.getElementById('luk-search').value = getVal(data.row, ['Nama']);
-
-            map.flyTo([coords.lat, coords.lng], 16, { animate: true, duration: 1.5 });
-            
-            markers.zoomToShowLayer(marker, () => {
-                marker.openPopup();
-            });
+            map.flyTo([data.coords.lat, data.coords.lng], 16, { animate: true, duration: 1.5 });
+            markers.zoomToShowLayer(data.marker, () => data.marker.openPopup());
         };
 
         // --- Helper Functions ---
 
         async function fetchCoords(address) {
             try {
-                const query = `${address}, Indonesia`;
-                const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+                const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ', Indonesia')}&limit=1`);
                 const json = await resp.json();
                 return json.length > 0 ? { lat: parseFloat(json[0].lat), lng: parseFloat(json[0].lon) } : null;
             } catch (e) { return null; }
@@ -314,8 +329,7 @@
 
         function cleanCoord(val) {
             if (!val) return null;
-            const cleaned = val.toString().replace(',', '.').trim();
-            const num = parseFloat(cleaned);
+            const num = parseFloat(val.toString().replace(',', '.').trim());
             return isNaN(num) ? null : num;
         }
 
@@ -328,55 +342,66 @@
             return "";
         }
 
-        // Fungsi umum untuk newline (digunakan pada Alamat)
         function formatMultiLine(text) {
             if (!text) return '-';
             return text.toString().split('\n').join('<br>');
         }
 
-        // Fungsi khusus untuk list (digunakan pada Kontak & Email agar memecah koma/titik koma menjadi baris baru)
-        function formatList(text) {
+        // Translate Singkatan & Format List
+        function formatList(text, isLingkup = false) {
             if (!text) return '-';
-            // Regex memisahkan berdasarkan newline (\n), koma (,), atau titik koma (;)
-            return text.toString()
-                .split(/[\n,;]/)
-                .map(item => item.trim())
-                .filter(item => item.length > 0)
-                .join('<br>');
+            const items = text.toString().split(/[\n,;]/).map(item => item.trim()).filter(i => i.length > 0);
+            
+            if (isLingkup) {
+                return `<div class="flex flex-wrap gap-1.5 mt-1.5">
+                    ${items.map(i => {
+                        const fullName = SCOPE_NAMES[i.toUpperCase()] || i;
+                        return `<span class="bg-indigo-50 text-indigo-700 text-[9px] font-bold px-2 py-0.5 rounded-md border border-indigo-100 shadow-sm whitespace-nowrap">${fullName}</span>`;
+                    }).join('')}
+                </div>`;
+            }
+            return items.join('<br>');
         }
 
-        function createPopup(row) {
+        function createPopup(row, scopeCount) {
             const nama = getVal(row, ['Nama']);
             const alamat = getVal(row, ['Alamat']);
-            const kontak = getVal(row, ['Kontak']);
-            const email = getVal(row, ['Email']);
+            const lingkup = getVal(row, ['Lingkup']);
             const mapsLink = getVal(row, ['MAPS', 'Map']);
+            const isComplete = scopeCount >= 5;
             
             return `
                 <div class="font-sans p-1 text-slate-900">
                     <div class="flex justify-between items-start mb-3 border-b border-slate-100 pb-2 gap-4">
-                        <h4 class="font-black text-indigo-900 text-base leading-tight">${nama}</h4>
+                        <div>
+                            <h4 class="font-black text-indigo-900 text-base leading-tight">${nama}</h4>
+                            ${isComplete ? `<span class="inline-block bg-amber-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded mt-1 uppercase tracking-tighter shadow-sm">Lingkup Lengkap</span>` : ''}
+                        </div>
                         <img src="logo.png" class="h-6 w-auto opacity-30 flex-shrink-0" alt="BAPETEN">
                     </div>
-                    <div class="flex items-start gap-2.5 mb-3">
+
+                    <div class="mb-3">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Alamat</p>
                         <p class="text-[11px] text-slate-600 leading-normal font-medium m-0">${formatMultiLine(alamat)}</p>
                     </div>
-                    <div class="space-y-2 text-[11px] border-t border-slate-100 pt-3 mt-2">
-                        <div class="flex items-start gap-2">
-                            <span class="font-bold text-slate-500 min-w-[50px]">Kontak:</span>
-                            <span class="text-slate-800 font-semibold leading-relaxed">${formatList(kontak)}</span>
+
+                    <div class="mb-4">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Lingkup Layanan (${scopeCount})</p>
+                        ${formatList(lingkup, true)}
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3 text-[10px] border-t border-slate-100 pt-3 mt-2 mb-4">
+                        <div>
+                            <span class="font-black text-slate-400 uppercase block mb-0.5">Kontak</span>
+                            <span class="text-slate-800 font-bold leading-relaxed">${formatList(getVal(row, ['Kontak']))}</span>
                         </div>
-                        <div class="flex items-start gap-2">
-                            <span class="font-bold text-slate-500 min-w-[50px]">Email:</span>
-                            <span class="text-indigo-800 break-all font-bold underline leading-relaxed">${formatList(email)}</span>
+                        <div>
+                            <span class="font-black text-slate-400 uppercase block mb-0.5">Email</span>
+                            <span class="text-indigo-800 break-all font-bold leading-relaxed underline">${formatList(getVal(row, ['Email']))}</span>
                         </div>
                     </div>
+
                     ${mapsLink ? `
-                        <div class="mt-4">
-                            <a href="${mapsLink}" target="_blank" class="block w-full text-center bg-indigo-700 text-white text-[11px] font-black py-2.5 rounded-xl shadow-lg hover:bg-indigo-800 transition-all uppercase tracking-widest no-underline">
-                                Buka di Google Maps
-                            </a>
-                        </div>
                     ` : ''}
                 </div>
             `;
