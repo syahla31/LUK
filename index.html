@@ -30,19 +30,23 @@
             transition: all 0.5s ease;
         }
 
+        /* Profesional Leaflet Popup */
         .leaflet-popup-content-wrapper { 
-            border-radius: 1.5rem; 
-            padding: 4px; 
-            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.2); 
+            border-radius: 1.25rem; 
+            padding: 0; 
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); 
         }
-        .leaflet-popup-content { margin: 16px; min-width: 280px !important; }
+        .leaflet-popup-content { margin: 0 !important; width: 320px !important; }
+        .leaflet-container a.leaflet-popup-close-button { color: #94a3b8; top: 12px; right: 12px; font-size: 18px; }
         
         #progress-bar { transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
         
-        /* Custom Marker Glow for Complete Scopes */
         .marker-pin-complete {
-            filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.6));
+            filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.5));
         }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
         
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -53,225 +57,181 @@
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-10">
         <!-- Header Section -->
-        <header class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
+        <header class="flex flex-col md:flex-row justify-between items-center mb-8 gap-6">
             <div class="flex items-center gap-4 w-full md:w-auto">
                 <div class="flex-shrink-0">
-                    <img src="logo.png" alt="Logo BAPETEN" class="h-14 md:h-16 w-auto drop-shadow-sm opacity-90 brightness-95" onerror="this.style.display='none'">
+                    <img src="logo.png" alt="Logo BAPETEN" class="h-12 md:h-14 w-auto opacity-90" onerror="this.style.display='none'">
                 </div>
-                <div class="hidden md:block h-12 w-px bg-slate-200 mx-1"></div>
-                <div class="flex flex-col justify-center text-center md:text-left">
-                    <h1 class="text-xl md:text-3xl font-black text-indigo-900 tracking-tight uppercase leading-none mb-1.5">Peta Sebaran LUK</h1>
-                    <div class="flex items-center justify-center md:justify-start gap-2">
-                        <span class="bg-indigo-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded tracking-widest uppercase">BAPETEN</span>
-                        <p class="text-slate-500 font-bold text-[10px] md:text-xs uppercase tracking-[0.05em] opacity-70">Lembaga Uji Kesesuaian</p>
-                    </div>
+                <div class="flex flex-col">
+                    <h1 class="text-xl md:text-2xl font-black text-indigo-950 tracking-tight uppercase leading-none">Peta Sebaran LUK</h1>
+                    <p class="text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-1">Lembaga Uji Kesesuaian BAPETEN</p>
                 </div>
             </div>
             
-            <div id="status-container" class="w-full md:w-auto bg-white border border-slate-200 px-5 py-3 rounded-2xl shadow-sm flex items-center justify-between md:justify-start gap-4">
-                <div class="flex items-center gap-3">
-                    <span class="relative flex h-3 w-3">
+            <div id="status-container" class="bg-white border border-slate-200 px-4 py-2 rounded-2xl shadow-sm flex items-center gap-4">
+                <div class="flex items-center gap-2.5">
+                    <span class="relative flex h-2 w-2">
                         <span id="status-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                        <span id="status-dot" class="relative inline-flex rounded-full h-3 w-3 bg-indigo-500"></span>
+                        <span id="status-dot" class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
                     </span>
-                    <span id="status-badge" class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Sinkronisasi Data</span>
+                    <span id="status-badge" class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Sinkronisasi...</span>
                 </div>
-                <button onclick="window.location.reload()" class="p-2 hover:bg-slate-100 rounded-xl transition-all text-slate-400 hover:text-indigo-600 active:scale-95">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <button onclick="window.location.reload()" class="text-slate-300 hover:text-indigo-600 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                 </button>
             </div>
         </header>
 
         <!-- Search Bar -->
-        <div class="relative max-w-2xl mx-auto mb-8 z-[1001]">
-            <div class="relative">
+        <div class="relative max-w-xl mx-auto mb-8 z-[1001]">
+            <div class="group relative">
                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <svg class="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <svg class="h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 </div>
-                <input type="text" id="luk-search" placeholder="Cari Nama LUK atau Lokasi (Padang, Depok...)" 
-                    class="block w-full pl-11 pr-4 py-4 bg-white border-2 border-slate-100 rounded-2xl leading-5 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-sm font-semibold text-slate-800 placeholder:text-slate-400 shadow-sm">
+                <input type="text" id="luk-search" placeholder="Cari nama lembaga atau kota..." 
+                    class="block w-full pl-10 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all text-sm font-medium text-slate-700 shadow-sm">
             </div>
-            <div id="search-results" class="absolute mt-2 w-full bg-white rounded-2xl border border-slate-100 shadow-2xl max-h-80 overflow-y-auto hidden z-[1002]"></div>
+            <div id="search-results" class="absolute mt-2 w-full bg-white rounded-2xl border border-slate-100 shadow-xl max-h-64 overflow-y-auto hidden"></div>
         </div>
 
         <!-- Map Card Section -->
-        <main class="bg-white p-3 md:p-4 rounded-[2.5rem] shadow-2xl shadow-slate-200 border border-white relative overflow-hidden">
+        <main class="bg-white p-2 rounded-[2rem] shadow-xl border border-slate-100 relative overflow-hidden">
             <div id="loader" class="custom-loader text-center px-10">
-                <div class="relative mb-8 text-indigo-600">
-                    <div class="w-24 h-24 border-4 border-slate-50 border-t-current rounded-full animate-spin"></div>
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <svg class="w-10 h-10 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                    </div>
+                <div class="relative mb-6">
+                    <div class="w-16 h-16 border-4 border-slate-100 border-t-indigo-600 rounded-full animate-spin"></div>
                 </div>
-                <h2 id="loader-msg" class="text-2xl font-black text-indigo-900 mb-2 tracking-tight">Menghimpun Data LUK</h2>
-                <div class="w-full max-w-sm bg-slate-100 rounded-full h-3 overflow-hidden shadow-inner border border-slate-50">
-                    <div id="progress-bar" class="bg-indigo-600 h-full w-0 shadow-lg shadow-indigo-200"></div>
+                <h2 id="loader-msg" class="text-lg font-bold text-slate-800 tracking-tight">Memuat Data LUK...</h2>
+                <div class="w-48 bg-slate-100 rounded-full h-1.5 mt-4 overflow-hidden">
+                    <div id="progress-bar" class="bg-indigo-600 h-full w-0"></div>
                 </div>
             </div>
-
-            <div id="map" class="shadow-inner bg-slate-50"></div>
+            <div id="map"></div>
         </main>
 
         <!-- Stats Section -->
-        <section class="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex items-center gap-5 hover:shadow-xl transition-all group">
-                <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-sm">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+        <section class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+            <div class="bg-white p-5 rounded-3xl border border-slate-100 flex items-center gap-4">
+                <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
                 </div>
                 <div>
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Lembaga</p>
-                    <h3 class="text-4xl font-black text-slate-800 tracking-tighter" id="count-total">0</h3>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total LUK</p>
+                    <h3 class="text-xl font-black text-slate-800" id="count-total">0</h3>
                 </div>
             </div>
 
-            <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex items-center gap-5 hover:shadow-xl transition-all group">
-                <div class="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-sm">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="bg-white p-5 rounded-3xl border border-slate-100 flex items-center gap-4">
+                <div class="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
                 <div>
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Sub Lingkup Lengkap</p>
-                    <h3 class="text-4xl font-black text-slate-800 tracking-tighter" id="count-complete">0</h3>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Lingkup 5+</p>
+                    <h3 class="text-xl font-black text-slate-800" id="count-complete">0</h3>
                 </div>
             </div>
 
-            <div class="sm:col-span-2 bg-indigo-900 p-6 rounded-[2rem] shadow-2xl flex items-center gap-6 text-white relative overflow-hidden group border border-white/5">
-                <div class="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-125 transition-transform duration-700 text-white">
-                    <svg class="w-32 h-32" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                </div>
-                <div class="hidden sm:flex w-16 h-16 bg-white/10 rounded-2xl items-center justify-center flex-shrink-0 backdrop-blur-xl border border-white/10 shadow-inner">
-                    <img src="logo.png" class="h-10 w-auto opacity-80" alt="BAPETEN">
-                </div>
-                <div class="space-y-1 relative z-10">
-                    <h4 class="font-black text-sm uppercase tracking-wider text-indigo-300">Sinkronisasi Real-Time</h4>
-                    <p class="text-[11px] md:text-xs text-indigo-100 leading-relaxed opacity-90 font-medium font-sans">Dashboard resmi sebaran Lembaga Uji Kesesuaian (LUK) yang terdaftar di BAPETEN. Data diperbarui otomatis.</p>
+            <div class="lg:col-span-2 bg-indigo-900 p-5 rounded-3xl text-white flex items-center gap-4">
+                <div class="space-y-1">
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-indigo-300">Informasi Lingkup</h4>
+                    <p class="text-[10px] text-indigo-100 opacity-80 leading-relaxed font-medium">
+                        RU: Rad. Umum | FL: Fluoroskopi | MM: Mammografi | CT: CT Scan | DT: Gigi | TA: Terapi | PB: Panoramic
+                    </p>
                 </div>
             </div>
         </section>
 
-        <footer class="mt-16 text-center text-slate-400 text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3">
-            <span class="w-10 h-px bg-slate-200"></span>
-            &copy; 2026 BAPETEN &bull; Peta Sebaran LUK
-            <span class="w-10 h-px bg-slate-200"></span>
+        <footer class="mt-12 text-center text-slate-300 text-[9px] font-bold uppercase tracking-[0.2em]">
+            &copy; 2026 BAPETEN &bull; Lembaga Uji Kesesuaian
         </footer>
     </div>
 
     <script>
-        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSRXF0_8knUCl48LoBsU_Zjey3lthBmdNiuWhpWEDaA2bU6s2yyt2aMAQ3rl3xtbGN232TR-K-ottet/pub?gid=472924235&single=true&output=csv';
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSRXF0_8knUCl48LoBsU_Zjey3lthBmdNiuWhpWEDaA2bU6s2yyt2aMAQ3rl3xtbGN232TR-K-ottet/pub?gid=472924235&single=true&output=csv&t=' + new Date().getTime();
 
         let map, markers, allLUKData = [];
         const markerMap = new Map();
 
-        // Dictionary Singkatan Lingkup
         const SCOPE_NAMES = {
-            'RU': 'Radiografi Umum',
-            'FL': 'Fluoroskopi',
-            'MM': 'Mammografi',
-            'CT': 'CT Scan',
-            'DT': 'Pesawat Gigi'
+            'RU': 'Radiografi Umum', 'FL': 'Fluoroskopi', 'MM': 'Mammografi', 
+            'CT': 'CT Scan', 'DT': 'Pesawat Gigi'
         };
 
         const createIcon = (color, isPremium) => L.divIcon({
             className: isPremium ? 'marker-pin-complete' : '',
-            html: `<svg width="32" height="42" viewBox="0 0 32 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+            html: `<svg width="28" height="36" viewBox="0 0 32 42" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M16 0C7.163 0 0 7.163 0 16c0 12 16 26 16 26s16-14 16-26c0-8.837-7.163-16-16-16z" fill="${color}"/>
-                    <circle cx="16" cy="16" r="6" fill="white" fill-opacity="0.8"/>
+                    <circle cx="16" cy="16" r="5" fill="white" fill-opacity="0.9"/>
                    </svg>`,
-            iconSize: [32, 42],
-            iconAnchor: [16, 42],
-            popupAnchor: [0, -40]
+            iconSize: [28, 36], iconAnchor: [14, 36], popupAnchor: [0, -34]
         });
 
-        const iconIndigo = createIcon('#4f46e5', false);
-        const iconGold = createIcon('#f59e0b', true);
-
         window.onload = function() {
-            map = L.map('map', { 
-                zoomControl: false,
-                maxZoom: 19,
-                scrollWheelZoom: false 
-            }).setView([-2.5489, 118.0149], 5);
-
-            markers = L.markerClusterGroup({
-                showCoverageOnHover: false,
-                spiderfyOnMaxZoom: true,
-                zoomToBoundsOnClick: true
-            });
+            map = L.map('map', { zoomControl: false, maxZoom: 18 }).setView([-2.5489, 118.0149], 5);
+            markers = L.markerClusterGroup({ showCoverageOnHover: false, spiderfyOnMaxZoom: true });
             map.addLayer(markers);
             L.control.zoom({ position: 'bottomright' }).addTo(map);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 18 }).addTo(map);
 
             initSearch();
             loadData();
         };
 
+        window.togglePersonil = function(btn) {
+            const container = btn.nextElementSibling;
+            const isHidden = container.classList.contains('hidden');
+            if (isHidden) {
+                container.classList.remove('hidden');
+                btn.innerHTML = 'Sembunyikan Detail Personil';
+                btn.classList.add('bg-slate-100', 'text-slate-600');
+            } else {
+                container.classList.add('hidden');
+                btn.innerHTML = 'Lihat Personil';
+                btn.classList.remove('bg-slate-100', 'text-slate-600');
+            }
+        };
+
         async function loadData() {
             Papa.parse(SHEET_CSV_URL, {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
+                download: true, header: true, skipEmptyLines: true,
                 complete: async function(results) {
-                    const validData = results.data.filter(row => getVal(row, ['Nama']));
-                    allLUKData = validData;
-
+                    allLUKData = results.data.filter(row => getVal(row, ['Nama']));
                     const loader = document.getElementById('loader');
-                    const loaderMsg = document.getElementById('loader-msg');
                     const progressBar = document.getElementById('progress-bar');
-                    const countTotal = document.getElementById('count-total');
-                    const countComplete = document.getElementById('count-complete');
-                    
-                    const badge = document.getElementById('status-badge');
-                    const dot = document.getElementById('status-dot');
-                    const ping = document.getElementById('status-ping');
+                    document.getElementById('count-total').innerText = allLUKData.length;
 
-                    countTotal.innerText = allLUKData.length;
-                    let processedCount = 0;
                     let completeCount = 0;
-
                     for (let i = 0; i < allLUKData.length; i++) {
                         const row = allLUKData[i];
-                        const lat = cleanCoord(getVal(row, ['Lat', 'Latitude']));
-                        const lng = cleanCoord(getVal(row, ['Lng', 'Lon', 'Longitude', 'Long']));
-                        const lingkupRaw = getVal(row, ['Lingkup']);
+                        let lat = cleanCoord(getVal(row, ['Lat', 'Latitude']));
+                        let lng = cleanCoord(getVal(row, ['Lng', 'Long', 'Longitude']));
                         
-                        const scopeCount = lingkupRaw.split(/[\n,;]/).map(s => s.trim()).filter(s => s.length > 0).length;
-                        const isComplete = scopeCount >= 5;
+                        if (lat && lng && Math.abs(lat) > 20 && Math.abs(lng) < 20) [lat, lng] = [lng, lat];
+
+                        let scopes = (getVal(row, ['Lingkup']) || "").split(/[\n,;]/).map(s => s.trim()).filter(s => s);
+                        
+                        scopes = [...new Set(scopes)];
+
+                        const isComplete = scopes.length >= 5;
                         if(isComplete) completeCount++;
 
-                        let coords = (lat !== null && lng !== null) ? { lat, lng } : null;
-
-                        if (!coords) {
-                            loaderMsg.innerText = `Mendeteksi: ${getVal(row, ['Nama'])}`;
-                            coords = await fetchCoords(getVal(row, ['Alamat']));
-                            if (i % 2 === 0) await new Promise(r => setTimeout(r, 1000));
-                        }
+                        let coords = (lat && lng) ? { lat, lng } : null;
+                        if (!coords) coords = await fetchCoords(getVal(row, ['Alamat']));
 
                         if (coords) {
                             const marker = L.marker([coords.lat, coords.lng], {
-                                icon: isComplete ? iconGold : iconIndigo
-                            }).bindPopup(createPopup(row, scopeCount));
-                            
+                                icon: isComplete ? createIcon('#f59e0b', true) : createIcon('#4f46e5', false)
+                            }).bindPopup(createPopup(row, scopes, !!(lat && lng)));
                             markers.addLayer(marker);
-                            const lukId = `luk-${i}`;
-                            markerMap.set(lukId, { marker, row, coords });
-                            processedCount++;
+                            markerMap.set(`luk-${i}`, { marker, row, coords });
                         }
-
-                        countComplete.innerText = completeCount;
                         progressBar.style.width = `${((i + 1) / allLUKData.length) * 100}%`;
+                        if (!lat) await new Promise(r => setTimeout(r, 800));
                     }
-
-                    // Done loading - Update Visuals
-                    loader.style.opacity = "0";
-                    setTimeout(() => loader.style.display = 'none', 500);
-                    
-                    // Update Badge to Green
-                    badge.innerText = "Data BAPETEN Terhubung";
-                    badge.className = "text-[10px] font-black text-emerald-600 uppercase tracking-widest";
-                    dot.className = "relative inline-flex rounded-full h-3 w-3 bg-emerald-500";
-                    ping.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75";
+                    document.getElementById('count-complete').innerText = completeCount;
+                    loader.style.opacity = "0"; setTimeout(() => loader.style.display = 'none', 500);
+                    const badge = document.getElementById('status-badge');
+                    badge.innerText = "Data Terhubung";
+                    badge.className = "text-[9px] font-black text-emerald-600 uppercase tracking-widest";
                 }
             });
         }
@@ -279,33 +239,27 @@
         function initSearch() {
             const searchInput = document.getElementById('luk-search');
             const resultsDiv = document.getElementById('search-results');
-
             searchInput.addEventListener('input', (e) => {
                 const query = e.target.value.toLowerCase().trim();
                 if (query.length < 2) { resultsDiv.classList.add('hidden'); return; }
-
-                const filtered = Array.from(markerMap.entries()).filter(([id, data]) => {
-                    return getVal(data.row, ['Nama']).toLowerCase().includes(query) || 
-                           getVal(data.row, ['Alamat']).toLowerCase().includes(query);
-                });
+                const filtered = Array.from(markerMap.entries()).filter(([id, data]) => 
+                    getVal(data.row, ['Nama']).toLowerCase().includes(query) || 
+                    getVal(data.row, ['Alamat']).toLowerCase().includes(query)
+                ).slice(0, 5);
 
                 if (filtered.length > 0) {
                     resultsDiv.innerHTML = filtered.map(([id, data]) => `
-                        <div onclick="selectLUK('${id}')" class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-slate-50 last:border-0 transition-colors">
-                            <div class="text-sm font-bold text-indigo-900">${getVal(data.row, ['Nama'])}</div>
-                            <div class="text-[10px] text-slate-400 uppercase font-black tracking-widest mt-0.5">${getVal(data.row, ['Alamat']).substring(0, 40)}...</div>
-                        </div>
-                    `).join('');
+                        <div onclick="selectLUK('${id}')" class="px-4 py-3 hover:bg-slate-50 cursor-pointer border-b border-slate-50 last:border-0">
+                            <div class="text-[13px] font-bold text-slate-800">${getVal(data.row, ['Nama'])}</div>
+                            <div class="text-[10px] text-slate-400 truncate uppercase tracking-tighter">${getVal(data.row, ['Alamat'])}</div>
+                        </div>`).join('');
                     resultsDiv.classList.remove('hidden');
                 } else {
-                    resultsDiv.innerHTML = `<div class="px-4 py-4 text-xs text-slate-400 italic">Tidak ditemukan...</div>`;
+                    resultsDiv.innerHTML = `<div class="px-4 py-3 text-[11px] text-slate-400 italic">Tidak ditemukan</div>`;
                     resultsDiv.classList.remove('hidden');
                 }
             });
-
-            document.addEventListener('click', (e) => {
-                if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target)) resultsDiv.classList.add('hidden');
-            });
+            document.addEventListener('click', (e) => { if (!searchInput.contains(e.target)) resultsDiv.classList.add('hidden'); });
         }
 
         window.selectLUK = function(id) {
@@ -313,15 +267,14 @@
             if (!data) return;
             document.getElementById('search-results').classList.add('hidden');
             document.getElementById('luk-search').value = getVal(data.row, ['Nama']);
-            map.flyTo([data.coords.lat, data.coords.lng], 16, { animate: true, duration: 1.5 });
+            map.flyTo([data.coords.lat, data.coords.lng], 16, { animate: true });
             markers.zoomToShowLayer(data.marker, () => data.marker.openPopup());
         };
 
-        // --- Helper Functions ---
-
+        // --- Helpers ---
         async function fetchCoords(address) {
             try {
-                const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ', Indonesia')}&limit=1`);
+                const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address.split(',')[0].trim() + ', Indonesia')}&countrycodes=id&limit=1`);
                 const json = await resp.json();
                 return json.length > 0 ? { lat: parseFloat(json[0].lat), lng: parseFloat(json[0].lon) } : null;
             } catch (e) { return null; }
@@ -329,79 +282,102 @@
 
         function cleanCoord(val) {
             if (!val) return null;
-            const num = parseFloat(val.toString().replace(',', '.').trim());
+            const num = parseFloat(val.toString().replace(',', '.').replace(/\s/g, ''));
             return isNaN(num) ? null : num;
         }
 
-        function getVal(row, keyNames) {
-            const keys = Object.keys(row);
-            for (let name of keyNames) {
-                const foundKey = keys.find(k => k.trim().toLowerCase() === name.toLowerCase());
-                if (foundKey) return row[foundKey];
+        function isFalsy(v) { return !v || ['-', 'false', 'none', '0', 'tidak ada'].includes(v.toString().toLowerCase().trim()); }
+
+        function getVal(row, keys) {
+            const rKeys = Object.keys(row);
+            for (let k of keys) {
+                const found = rKeys.find(rk => rk.trim().toLowerCase() === k.toLowerCase());
+                if (found) return row[found];
             }
             return "";
         }
 
-        function formatMultiLine(text) {
-            if (!text) return '-';
-            return text.toString().split('\n').join('<br>');
+        function renderChips(list, colorClass) {
+            return `<div class="flex flex-wrap gap-1.5 mt-1">
+                ${list.map(i => `<span class="${colorClass} text-[9px] font-bold px-2 py-0.5 rounded-md border shadow-sm">${i}</span>`).join('')}
+            </div>`;
         }
 
-        // Translate Singkatan & Format List
-        function formatList(text, isLingkup = false) {
-            if (!text) return '-';
-            const items = text.toString().split(/[\n,;]/).map(item => item.trim()).filter(i => i.length > 0);
-            
-            if (isLingkup) {
-                return `<div class="flex flex-wrap gap-1.5 mt-1.5">
-                    ${items.map(i => {
-                        const fullName = SCOPE_NAMES[i.toUpperCase()] || i;
-                        return `<span class="bg-indigo-50 text-indigo-700 text-[9px] font-bold px-2 py-0.5 rounded-md border border-indigo-100 shadow-sm whitespace-nowrap">${fullName}</span>`;
-                    }).join('')}
-                </div>`;
-            }
-            return items.join('<br>');
-        }
-
-        function createPopup(row, scopeCount) {
+        function createPopup(row, scopes, isGPS) {
             const nama = getVal(row, ['Nama']);
             const alamat = getVal(row, ['Alamat']);
-            const lingkup = getVal(row, ['Lingkup']);
-            const mapsLink = getVal(row, ['MAPS', 'Map']);
-            const isComplete = scopeCount >= 5;
+            const ta = getVal(row, ['Tenaga Ahli']);
+            const pb = getVal(row, ['Penguji Berkualifikasi']);
+            const kontak = getVal(row, ['Kontak']);
+            const email = getVal(row, ['Email']);
             
+            const hasPersonil = !isFalsy(ta) || !isFalsy(pb);
+
             return `
-                <div class="font-sans p-1 text-slate-900">
-                    <div class="flex justify-between items-start mb-3 border-b border-slate-100 pb-2 gap-4">
-                        <div>
-                            <h4 class="font-black text-indigo-900 text-base leading-tight">${nama}</h4>
-                        </div>
-                        <img src="logo.png" class="h-6 w-auto opacity-30 flex-shrink-0" alt="BAPETEN">
-                    </div>
-
-                    <div class="mb-3">
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Alamat</p>
-                        <p class="text-[11px] text-slate-600 leading-normal font-medium m-0">${formatMultiLine(alamat)}</p>
-                    </div>
-
-                    <div class="mb-4">
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Lingkup Layanan (${scopeCount})</p>
-                        ${formatList(lingkup, true)}
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-3 text-[10px] border-t border-slate-100 pt-3 mt-2 mb-4">
-                        <div>
-                            <span class="font-black text-slate-400 uppercase block mb-0.5">Kontak</span>
-                            <span class="text-slate-800 font-bold leading-relaxed">${formatList(getVal(row, ['Kontak']))}</span>
-                        </div>
-                        <div>
-                            <span class="font-black text-slate-400 uppercase block mb-0.5">Email</span>
-                            <span class="text-indigo-800 break-all font-bold leading-relaxed underline">${formatList(getVal(row, ['Email']))}</span>
+                <div class="text-slate-900 bg-white">
+                    <div class="pl-5 pr-8 py-4 bg-slate-50/80 border-b border-slate-100">
+                        <div class="flex justify-between items-start gap-4">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="font-black text-[15px] leading-tight text-indigo-950">${nama}</h4>
+                                </div>
+                            </div>
+                            <img src="logo.png" class="h-8 w-auto opacity-30 flex-shrink-0" alt="BAPETEN" onerror="this.style.display='none'">
                         </div>
                     </div>
 
-                    ${mapsLink ? `
-                    ` : ''}
+                    <div class="p-5 space-y-5">
+                        <div class="flex gap-3">
+                            <div class="text-indigo-500 mt-0.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
+                            <div class="text-[11px] leading-relaxed text-slate-500 font-medium">${alamat}</div>
+                        </div>
+
+                        <div>
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Lingkup Layanan
+                            </p>
+                            ${renderChips(scopes, 'bg-white text-indigo-700 border-indigo-100')}
+                        </div>
+
+                        <!-- Tombol Expand Personil -->
+                        ${hasPersonil ? `
+                        <div class="space-y-3">
+                            <button onclick="togglePersonil(this)" class="w-full py-2 border-2 border-slate-100 rounded-xl text-[10px] font-black text-indigo-500 uppercase tracking-widest hover:border-indigo-100 transition-all">
+                                Lihat Personil
+                            </button>
+                            <div class="hidden space-y-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                ${!isFalsy(ta) ? `
+                                    <div>
+                                        <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                                            <span class="w-1 h-1 bg-indigo-400 rounded-full"></span> Tenaga Ahli (TA)
+                                        </p>
+                                        <div class="flex flex-wrap gap-1.5">
+                                            ${ta.split(';').map(n => `<span class="bg-white text-slate-700 text-[9px] font-bold px-2 py-0.5 rounded-lg border border-slate-200 shadow-sm">${n.trim()}</span>`).join('')}
+                                        </div>
+                                    </div>` : ''}
+                                ${!isFalsy(pb) ? `
+                                    <div>
+                                        <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                                            <span class="w-1 h-1 bg-emerald-400 rounded-full"></span> Penguji Berkualifikasi (PB)
+                                        </p>
+                                        <div class="flex flex-wrap gap-1.5">
+                                            ${pb.split(';').map(n => `<span class="bg-white text-emerald-700 text-[9px] font-bold px-2 py-0.5 rounded-lg border border-emerald-100 shadow-sm">${n.trim()}</span>`).join('')}
+                                        </div>
+                                    </div>` : ''}
+                            </div>
+                        </div>` : ''}
+
+                        <div class="grid grid-cols-2 gap-4 pt-0 border-t border-slate-100">
+                            <div>
+                                <p class="text-[8px] font-bold text-slate-400 uppercase mb-1">Kontak</p>
+                                <p class="text-[10px] font-bold text-slate-700 truncate">${kontak.split(/[\n,;]/)[0] || '-'}</p>
+                            </div>
+                            <div>
+                                <p class="text-[8px] font-bold text-slate-400 uppercase mb-1">Email</p>
+                                <p class="text-[10px] font-bold text-indigo-600 underline truncate">${email.split(/[\n,;]/)[0] || '-'}</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `;
         }
